@@ -1,0 +1,58 @@
+# ─────────────────────────────────────────────────────────────
+# BhashaBot .gitignore — Python + Node.js combined
+# ─────────────────────────────────────────────────────────────
+
+# ── Environment Variables ─────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+venv/
+env/
+ENV/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# ── ChromaDB & HuggingFace ───────────────────────────────────
+backend/chroma_db/
+backend/hf_cache/
+.cache/huggingface/
+
+# ── Uploaded PDFs ─────────────────────────────────────────────
+backend/uploads/
+*.pdf
+
+# ── Node.js / React ──────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+frontend/build/
+frontend/dist/
+.eslintcache
+
+# ── IDEs & Editors ────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
