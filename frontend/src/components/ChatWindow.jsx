@@ -25,7 +25,7 @@ const WelcomeState = ({ filename }) => (
   </div>
 );
 
-const ChatWindow = ({ sessionId, filename }) => {
+const ChatWindow = ({ sessionId, filename, preferredLanguage, tone }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,12 +34,27 @@ const ChatWindow = ({ sessionId, filename }) => {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
+  // Clear messages when sessionId changes (including when it becomes null)
+  useEffect(() => {
+    setMessages([]);
+    setInputValue("");
+  }, [sessionId]);
+
   const generateId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
   const handleSendMessage = useCallback(async () => {
     const query = inputValue.trim();
     if (!query || isLoading) return;
     if (!sessionId) { alert("Please upload a PDF document first!"); return; }
+    
+    // Map current chat messages state to history payload (excluding typing status)
+    const historyPayload = messages
+      .filter((msg) => !msg.isTyping)
+      .map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
     setInputValue("");
     setIsLoading(true);
     const userMessage = { id: generateId(), role: "user", content: query, timestamp: new Date().toISOString() };
@@ -47,7 +62,7 @@ const ChatWindow = ({ sessionId, filename }) => {
     const typingId = generateId();
     setMessages((prev) => [...prev, { id: typingId, role: "bot", content: "", isTyping: true, timestamp: new Date().toISOString() }]);
     try {
-      const response = await sendChatMessage(query, sessionId);
+      const response = await sendChatMessage(query, sessionId, historyPayload, preferredLanguage, tone);
       setMessages((prev) => prev.map((msg) => msg.id === userMessage.id ? { ...msg, detectedLanguage: response.detected_language } : msg));
       setMessages((prev) => prev.map((msg) => msg.id === typingId ? { ...msg, content: response.answer, sources: response.sources, isTyping: false, timestamp: new Date().toISOString() } : msg));
     } catch (error) {
@@ -56,7 +71,7 @@ const ChatWindow = ({ sessionId, filename }) => {
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  }, [inputValue, isLoading, sessionId]);
+  }, [inputValue, isLoading, sessionId, messages, preferredLanguage, tone]);
 
   const handleKeyDown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } };
 
@@ -72,7 +87,7 @@ const ChatWindow = ({ sessionId, filename }) => {
         {messages.length === 0 ? <WelcomeState filename={filename} /> : messages.map((message) => <MessageBubble key={message.id} message={message} />)}
         <div ref={messagesEndRef} />
       </div>
-      <div className="px-4 pb-4 pt-2 border-t border-surface-500/50">
+      <div className="px-4 pb-4 pt-2">
         {!sessionId && <p className="text-xs text-amber-400/80 mb-2 text-center">⚠️ Upload a PDF to enable chat</p>}
         <div className={`flex items-end gap-2 glass rounded-xl p-2 ${!sessionId ? "opacity-60" : ""}`}>
           <textarea

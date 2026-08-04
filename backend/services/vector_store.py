@@ -32,7 +32,8 @@ def get_chroma_client() -> chromadb.PersistentClient:
     global _client
     if _client is None:
         os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
-        _client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+        settings = Settings(anonymized_telemetry=False)
+        _client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR, settings=settings)
     return _client
 
 
@@ -67,6 +68,7 @@ def store_chunks(
     chunks: List[str],
     embeddings: List[List[float]],
     filename: str,
+    start_index: int = 0,
 ) -> None:
     """
     Store text chunks and their embeddings in ChromaDB.
@@ -76,17 +78,18 @@ def store_chunks(
         chunks: List of text chunk strings
         embeddings: Corresponding list of embedding vectors
         filename: Original PDF filename (stored as metadata)
+        start_index: Offset for chunk IDs to support batch processing
     """
     collection = get_collection(session_id)
 
-    # Create unique IDs for each chunk using session_id and index
-    ids = [f"{session_id}_chunk_{i}" for i in range(len(chunks))]
+    # Create unique IDs for each chunk using session_id and offset index
+    ids = [f"{session_id}_chunk_{start_index + i}" for i in range(len(chunks))]
 
     # Build metadata for each chunk — useful for source attribution
     metadatas = [
         {
             "filename": filename,
-            "chunk_index": i,
+            "chunk_index": start_index + i,
             "session_id": session_id,
         }
         for i in range(len(chunks))
@@ -119,10 +122,15 @@ def retrieve_chunks(session_id: str, query: str) -> List[Dict[str, Any]]:
     # Generate embedding for the query (with 'query: ' prefix for E5)
     query_embedding = embed_query(query)
 
+    # Guard: if no documents in collection, return empty results
+    doc_count = collection.count()
+    if doc_count == 0:
+        return []
+
     # Query ChromaDB for the top-K nearest neighbors
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=min(TOP_K, collection.count()),  # Don't request more than available
+        n_results=min(TOP_K, doc_count),  # Don't request more than available
         include=["documents", "metadatas", "distances"],
     )
 

@@ -14,6 +14,11 @@ load_dotenv()
 # Import route modules
 from routes.upload import router as upload_router
 from routes.chat import router as chat_router
+from routes.auth import router as auth_router
+from services.database import init_db
+
+# Initialize database tables on startup
+init_db()
 
 # Initialize FastAPI app with metadata
 app = FastAPI(
@@ -32,8 +37,10 @@ app.add_middleware(
 )
 
 # Register route modules with API prefix
+app.include_router(auth_router, prefix="/api", tags=["Auth"])
 app.include_router(upload_router, prefix="/api", tags=["Upload"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
+
 
 
 @app.get("/")
@@ -47,5 +54,5 @@ async def health_check():
     """Detailed health check endpoint."""
     return {
         "status": "healthy",
-        "gemini_api_configured": bool(os.getenv("GEMINI_API_KEY")),
+        "groq_api_configured": bool(os.getenv("GROQ_API_KEY")),
     }

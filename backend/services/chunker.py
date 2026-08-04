@@ -59,6 +59,10 @@ def chunk_text(text: str) -> List[str]:
     # Filter out empty or too-short chunks (less than 50 chars)
     chunks = [c for c in chunks if len(c) > 50]
 
+    # Fallback if text is very short but not empty
+    if not chunks and text.strip():
+        chunks = [text.strip()]
+
     return chunks
 
 

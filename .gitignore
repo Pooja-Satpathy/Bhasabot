@@ -56,3 +56,15 @@ Desktop.ini
 # ── Logs ─────────────────────────────────────────────────────
 logs/
 *.log
+
+# Database
+*.db
+
+# Zip files
+*.zip
+
+# Personal notes
+Bhasabot.txt
+Bhasabot_ideas.txt
+extracted_conversations.txt
+extracted_pb_text.txt

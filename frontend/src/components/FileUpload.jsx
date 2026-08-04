@@ -9,6 +9,53 @@ const FileUpload = ({ onUploadSuccess, currentFile }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileName, setFileName] = useState(currentFile || "");
+  const [duplicateFile, setDuplicateFile] = useState(null);
+  const [duplicateSession, setDuplicateSession] = useState(null);
+
+  const selectSession = useCallback((result) => {
+    setFileName(result.filename);
+    setUploadProgress(100);
+    setUploadState("success");
+    setDuplicateFile(null);
+    setDuplicateSession(null);
+    onUploadSuccess({
+      sessionId: result.session_id,
+      filename: result.filename,
+      chunksStored: result.chunks_stored,
+      documentVersion: result.document_version,
+      message: result.message,
+    });
+  }, [onUploadSuccess]);
+
+  const processFile = useCallback(async (file, forceReprocess = false) => {
+    setFileName(file.name);
+    setUploadState("uploading");
+    setErrorMessage("");
+    setUploadProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => Math.min(prev + 10, 85));
+    }, 300);
+
+    try {
+      const result = await uploadPDF(file, { forceReprocess });
+      clearInterval(progressInterval);
+
+      if (result.duplicate && !forceReprocess) {
+        setUploadProgress(0);
+        setUploadState("duplicate");
+        setDuplicateFile(file);
+        setDuplicateSession(result);
+        return;
+      }
+
+      selectSession(result);
+    } catch (error) {
+      clearInterval(progressInterval);
+      setUploadState("error");
+      setErrorMessage(error.message || "Upload failed. Please try again.");
+    }
+  }, [selectSession]);
 
   const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     if (rejectedFiles.length > 0) {
@@ -17,33 +64,15 @@ const FileUpload = ({ onUploadSuccess, currentFile }) => {
       return;
     }
     const file = acceptedFiles[0];
-    if (!file) return;
-    setFileName(file.name);
-    setUploadState("uploading");
-    setErrorMessage("");
-    setUploadProgress(0);
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => Math.min(prev + 10, 85));
-    }, 300);
-    try {
-      const result = await uploadPDF(file);
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      setUploadState("success");
-      onUploadSuccess({ sessionId: result.session_id, filename: result.filename, chunksStored: result.chunks_stored, message: result.message });
-    } catch (error) {
-      clearInterval(progressInterval);
-      setUploadState("error");
-      setErrorMessage(error.message || "Upload failed. Please try again.");
-    }
-  }, [onUploadSuccess]);
+    if (file) await processFile(file);
+  }, [processFile]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024,
-    disabled: uploadState === "uploading",
+    disabled: uploadState === "uploading" || uploadState === "duplicate",
   });
 
   const handleReset = () => {
@@ -51,11 +80,59 @@ const FileUpload = ({ onUploadSuccess, currentFile }) => {
     setFileName("");
     setUploadProgress(0);
     setErrorMessage("");
+    setDuplicateFile(null);
+    setDuplicateSession(null);
+  };
+
+  const handleUseExisting = () => {
+    if (duplicateSession) selectSession(duplicateSession);
+  };
+
+  const handleReprocess = () => {
+    if (duplicateFile) processFile(duplicateFile, true);
   };
 
   return (
     <div className="w-full">
-      {uploadState === "success" ? (
+      {uploadState === "duplicate" ? (
+        <div className="glass rounded-xl p-4 border border-amber-500/30 bg-amber-500/5">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <AlertCircle size={18} className="text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-amber-300">PDF already indexed</p>
+              <p className="text-xs text-slate-500 mt-1 truncate" title={fileName}>{fileName}</p>
+              <p className="text-xs text-slate-500 mt-2">
+                {duplicateSession?.message || "Use the existing index to avoid processing it again."}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <button
+              type="button"
+              onClick={handleUseExisting}
+              className="rounded-lg px-3 py-2 text-xs font-medium bg-brand-500 text-white hover:bg-brand-600 transition-colors"
+            >
+              Use existing
+            </button>
+            <button
+              type="button"
+              onClick={handleReprocess}
+              className="rounded-lg px-3 py-2 text-xs font-medium border border-surface-500 text-slate-400 hover:text-slate-200 hover:bg-surface-700 transition-colors"
+            >
+              Process again
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full mt-2 py-1 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : uploadState === "success" ? (
         <div id="upload-success-panel" className="glass rounded-xl p-4 border border-emerald-500/30 bg-emerald-500/5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">

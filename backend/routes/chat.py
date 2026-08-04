@@ -3,30 +3,25 @@ Chat Route - Handles user query processing and response generation
 Accepts query text and session_id, returns AI-generated answer with sources
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from models.schemas import ChatRequest, ChatResponse
 from services.translator import detect_language
 from services.rag_chain import run_rag_chain
+from services.auth import get_current_user
+from services.database import get_session_by_id
 
 # Create a router instance for chat-related endpoints
 router = APIRouter()
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(
+    request: ChatRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Process a user's query against their uploaded PDF documents.
-
-    Steps:
-    1. Detect the language of the query
-    2. Run the RAG chain (retrieve relevant chunks + generate answer)
-    3. Return the answer along with source references and detected language
-
-    Args:
-        request: ChatRequest containing query and session_id
-
-    Returns:
-        ChatResponse with answer, detected_language, and sources list
+    Verifies that the user owns the session before processing.
     """
     # Validate that session_id is provided
     if not request.session_id:
@@ -35,14 +30,30 @@ async def chat(request: ChatRequest):
             detail="session_id is required. Please upload a PDF first.",
         )
 
+    # Verify that the session exists and belongs to the authenticated user
+    session = get_session_by_id(request.session_id)
+    if not session or session["user_id"] != current_user["id"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied: You do not have access to this document session.",
+        )
+
     # Step 1: Detect the language of the incoming query
     detected_lang = detect_language(request.query)
 
-    # Step 2: Run the RAG pipeline — retrieve chunks and generate a Gemini answer
+    # Convert request.history to a list of dictionaries if provided
+    history_data = None
+    if request.history:
+        history_data = [{"role": h.role, "content": h.content} for h in request.history]
+
+    # Step 2: Run the RAG pipeline — retrieve chunks and generate an answer
     result = run_rag_chain(
         query=request.query,
         session_id=request.session_id,
         detected_language=detected_lang,
+        history=history_data,
+        preferred_language=request.preferred_language,
+        tone=request.tone,
     )
 
     return ChatResponse(
