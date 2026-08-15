@@ -142,7 +142,7 @@ Ask a question about the uploaded document.
 
 ## 🌏 Supported Languages
 
-| Hindi,English,Odia ,Hinglish,Odilish|
+Hindi,English,Odia ,Hinglish,Odilish
 
 ---
 
