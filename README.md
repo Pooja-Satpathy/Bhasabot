@@ -23,7 +23,7 @@ BhashaBot lets you upload any PDF document and ask questions about it in your na
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        BhashaBot                            │
+│                        BhasaBot                            │
 │                                                             │
 │  ┌───────────────┐         ┌─────────────────────────────┐  │
 │  │   React UI    │ ──API── │      FastAPI Backend        │  │
