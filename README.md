@@ -1,6 +1,6 @@
-# BhashaBot 🌐
+# BhasaBot 🌐
 
-> **Multilingual RAG-powered PDF Question Answering — Ask in Hindi, Tamil, English, and 50+ languages.**
+> **Multilingual RAG-powered PDF Question Answering — Ask in Hindi,English,Odia,Hinglish,Odilish.**
 
 BhashaBot lets you upload any PDF document and ask questions about it in your native language. It uses **multilingual-e5-large** embeddings for cross-lingual semantic search, **ChromaDB** as a local vector database, and **Google Gemini** for intelligent response generation.
 
@@ -9,7 +9,7 @@ BhashaBot lets you upload any PDF document and ask questions about it in your na
 ## ✨ Features
 
 - 📄 **PDF Ingestion** — Upload any PDF via drag-and-drop
-- 🌍 **Multilingual** — Ask in Hindi, Tamil, Telugu, Bengali, English, French, and 50+ languages
+- 🌍 **Multilingual** — Ask in Hindi,English,,Odia,Hinglish,Odilish.
 - 🔍 **Semantic Search** — `intfloat/multilingual-e5-large` embeddings for accurate retrieval
 - 🤖 **Gemini Answers** — Google Gemini 1.5 Flash generates context-grounded responses
 - 📌 **Source Citations** — Every answer shows which chunks it was derived from
@@ -142,12 +142,9 @@ Ask a question about the uploaded document.
 
 ## 🌏 Supported Languages
 
-| Indian Languages | Global Languages |
+| Indian Languages | Global Lang |
 |-----------------|-----------------|
-| Hindi, Tamil, Telugu | English, French, German |
-| Kannada, Malayalam | Spanish, Arabic, Japanese |
-| Bengali, Gujarati | Chinese, Portuguese |
-| Marathi, Punjabi, Odia | And 90+ more... |
+| Hindi,English,Odia ,Hinglish,Odilish|
 
 ---
 
