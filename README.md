@@ -142,8 +142,6 @@ Ask a question about the uploaded document.
 
 ## 🌏 Supported Languages
 
-| Indian Languages | Global Lang |
-|-----------------|-----------------|
 | Hindi,English,Odia ,Hinglish,Odilish|
 
 ---
