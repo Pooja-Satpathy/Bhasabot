@@ -10,7 +10,7 @@ BhashaBot lets you upload any PDF document and ask questions about it in your na
 
 - 📄 **PDF Ingestion** — Upload any PDF via drag-and-drop
 - 🌍 **Multilingual** — Ask in Hindi,English,,Odia,Hinglish,Odilish.
-- 🔍 **Semantic Search** — `intfloat/multilingual-e5-large` embeddings for accurate retrieval
+- 🔍 **Semantic Search** — `intfloat/multilingual-e5-small` embeddings for accurate retrieval
 - 🤖 **Gemini Answers** — Google Gemini 1.5 Flash generates context-grounded responses
 - 📌 **Source Citations** — Every answer shows which chunks it was derived from
 - 🔤 **Language Detection** — Automatic query language detection via `langdetect`
@@ -51,7 +51,7 @@ bhashabot/
 │   ├── services/
 │   │   ├── pdf_parser.py         # PyMuPDF text extraction
 │   │   ├── chunker.py            # 500-token overlapping chunks
-│   │   ├── embedder.py           # multilingual-e5-large embeddings
+│   │   ├── embedder.py           # multilingual-e5-small embeddings
 │   │   ├── vector_store.py       # ChromaDB storage & retrieval
 │   │   ├── translator.py         # Language detection + IndicTrans2 placeholder
 │   │   └── rag_chain.py          # RAG pipeline + Gemini API call
@@ -103,7 +103,7 @@ copy .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-> **Note:** The `multilingual-e5-large` model (~560MB) downloads automatically on first run.
+> **Note:** The `multilingual-e5-small` model (~560MB) downloads automatically on first run.
 
 - API: `http://localhost:8000`
 - Docs: `http://localhost:8000/docs`
