@@ -2,7 +2,7 @@
 
 > **Multilingual RAG-powered PDF Question Answering — Ask in Hindi,English,Odia,Hinglish,Odilish.**
 
-BhashaBot lets you upload any PDF document and ask questions about it in your native language. It uses **multilingual-e5-small** embeddings for cross-lingual semantic search, **ChromaDB** as a local vector database, and **Google Gemini** for intelligent response generation.
+BhashaBot lets you upload any PDF document and ask questions about it in your native language. It uses **multilingual-e5-small** embeddings for cross-lingual semantic search, **ChromaDB** as a local vector database, and **Groq** for intelligent response generation.
 
 ---
 
