@@ -30,7 +30,7 @@ BhashaBot lets you upload any PDF document and ask questions about it in your na
 │  │   (Port 3000) │         │      (Port 8000)            │  │
 │  └───────────────┘         │                             │  │
 │                            │  PDF Parser (PyMuPDF)       │  │
-│                            │  Embedder (E5-large)        │  │
+│                            │  Embedder (E5-small)        │  │
 │                            │  ChromaDB (Vector Store)    │  │
 │                            │  Gemini API (LLM)           │  │
 │                            └─────────────────────────────┘  │
