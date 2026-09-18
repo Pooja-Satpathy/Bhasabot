@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bhashabot-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-qwen/qwen3.6-27b}
+      - HF_API_TOKEN=${HF_API_TOKEN:-}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - CHROMA_PERSIST_DIR=/app/chroma_db
+      - HF_HOME=/app/hf_cache
+    volumes:
+      - backend_chroma:/app/chroma_db
+      - backend_hf_cache:/app/hf_cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bhashabot-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bhashabot-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - bhashabot-network
+
+volumes:
+  backend_chroma:
+    name: bhashabot_chroma_data
+  backend_hf_cache:
+    name: bhashabot_hf_cache
+
+networks:
+  bhashabot-network:
+    name: bhashabot-network
+    driver: bridge
